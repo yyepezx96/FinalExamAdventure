@@ -190,3 +190,28 @@ async def test_list_users_unauthorized(async_client, user_token):
         headers={"Authorization": f"Bearer {user_token}"}
     )
     assert response.status_code == 403  # Forbidden, as expected for regular user
+
+import pytest
+
+@pytest.mark.asyncio
+async def test_registration_triggers_email(mocker, async_client):
+    # Mock the email service method to prevent real email sending
+    mock_send_email = mocker.patch("app.services.email_service.EmailService.send_verification_email")
+
+    user_data = {
+        "email": "test_email_trigger@example.com",
+        "nickname": "triggernick",
+        "first_name": "Trigger",
+        "last_name": "Test",
+        "bio": "Testing email trigger",
+        "profile_picture_url": "https://example.com/trigger.jpg",
+        "linkedin_profile_url": "https://linkedin.com/in/trigger",
+        "github_profile_url": "https://github.com/trigger",
+        "role": "ANONYMOUS",
+        "password": "SecurePass123!"
+    }
+
+    response = await async_client.post("/register/", json=user_data)
+
+    assert response.status_code in [200, 201]
+    mock_send_email.assert_called_once()
