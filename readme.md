@@ -50,6 +50,8 @@ This project enhances the User Management System by implementing the **User Prof
 
 The app was successfully built and pushed to DockerHub.
 
+![DockerHub Screenshot](docs/dockerhub_screenshot.png)
+
 🔗 **DockerHub Image:**  
 👉 [https://hub.docker.com/r/yarlina/finalexamadventure](https://hub.docker.com/r/yarlina/finalexamadventure)
 
