@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+
 # Install Python dependencies in /.venv
 COPY requirements.txt .
 RUN python -m venv /.venv \

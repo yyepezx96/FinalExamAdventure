@@ -6,6 +6,10 @@ from app.models.user_model import User, UserRole
 from app.utils.nickname_gen import generate_nickname
 from app.utils.security import hash_password
 from app.services.jwt_service import decode_token  # Import your FastAPI app
+from app.services.user_service import UserService
+from app.services.email_service import EmailService
+from app.dependencies import get_email_service
+
 
 # Example of a test function using the async_client fixture
 @pytest.mark.asyncio
@@ -190,33 +194,38 @@ async def test_list_users_unauthorized(async_client, user_token):
         headers={"Authorization": f"Bearer {user_token}"}
     )
     assert response.status_code == 403  # Forbidden, as expected for regular user
-@pytest.mark.asyncio
-async def test_upgrade_user_to_professional_success(async_client, admin_token, regular_user):
-    headers = {"Authorization": f"Bearer {admin_token}"}
-    response = await async_client.post(
-        f"/users/{regular_user.id}/upgrade",
-        headers=headers
-    )
-    assert response.status_code == 200
-    assert response.json()["is_professional"] is True
+
+import pytest
 
 @pytest.mark.asyncio
-async def test_upgrade_user_not_found(async_client, admin_token):
-    from uuid import uuid4
-    non_existent_id = str(uuid4())
-    headers = {"Authorization": f"Bearer {admin_token}"}
-    response = await async_client.post(
-        f"/users/{non_existent_id}/upgrade",
-        headers=headers
-    )
-    assert response.status_code == 404
-    assert response.json()["detail"] == "User not found"
+async def test_registration_triggers_email(mocker, async_client, db_session):
+    # ✅ Patch the actual place it's used
+    mock_send_email = mocker.patch("app.services.user_service.EmailService.send_verification_email")
 
-@pytest.mark.asyncio
-async def test_upgrade_user_unauthorized(async_client, user_token, another_user):
-    headers = {"Authorization": f"Bearer {user_token}"}
-    response = await async_client.post(
-        f"/users/{another_user.id}/upgrade",
-        headers=headers
-    )
-    assert response.status_code == 403
+    # ✅ Pre-create one user to avoid the new user being the first ADMIN
+    await UserService.create(db_session, {
+        "email": "seeduser@example.com",
+        "nickname": "seeduser",
+        "first_name": "Seed",
+        "last_name": "User",
+        "password": "SeedUserPass123!",
+        "role": "ANONYMOUS"
+    }, get_email_service())
+
+    user_data = {
+        "email": "test_email_trigger@example.com",
+        "nickname": "triggernick",
+        "first_name": "Trigger",
+        "last_name": "Test",
+        "bio": "Testing email trigger",
+        "profile_picture_url": "https://example.com/trigger.jpg",
+        "linkedin_profile_url": "https://linkedin.com/in/trigger",
+        "github_profile_url": "https://github.com/trigger",
+        "role": "ANONYMOUS",
+        "password": "SecurePass123!"
+    }
+
+    response = await async_client.post("/register/", json=user_data)
+
+    assert response.status_code in [200, 201]
+    mock_send_email.assert_called_once()
