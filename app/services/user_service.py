@@ -189,20 +189,3 @@ class UserService:
             logger.error(f"[EMAIL ERROR] Failed to send professional upgrade email: {e}")
 
         return user
-    @staticmethod
-    async def update(db: AsyncSession, user_id: UUID, updates: dict) -> Optional[User]:
-        # Define fields that users should not be able to update directly
-        forbidden_fields = {"role", "is_locked", "is_professional", "verification_token", "email_verified", "failed_login_attempts", "last_login_at"}
-        for field in forbidden_fields:
-            updates.pop(field, None)
-
-        user = await db.get(User, user_id)
-        if not user:
-            return None
-
-        for key, value in updates.items():
-            setattr(user, key, value)
-
-        await db.commit()
-        await db.refresh(user)
-        return user 
