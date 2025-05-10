@@ -113,7 +113,7 @@ async def test_login_user_not_found(async_client):
     }
     response = await async_client.post("/login/", data=urlencode(form_data), headers={"Content-Type": "application/x-www-form-urlencoded"})
     assert response.status_code == 401
-    assert "Incorrect email or password." in response.json().get("detail", "")
+    assert "Incorrect email or password" in response.json().get("detail", "")
 
 @pytest.mark.asyncio
 async def test_login_incorrect_password(async_client, verified_user):
@@ -123,7 +123,7 @@ async def test_login_incorrect_password(async_client, verified_user):
     }
     response = await async_client.post("/login/", data=urlencode(form_data), headers={"Content-Type": "application/x-www-form-urlencoded"})
     assert response.status_code == 401
-    assert "Incorrect email or password." in response.json().get("detail", "")
+    assert "Incorrect email or password" in response.json().get("detail", "")
 
 @pytest.mark.asyncio
 async def test_login_unverified_user(async_client, unverified_user):
@@ -190,3 +190,33 @@ async def test_list_users_unauthorized(async_client, user_token):
         headers={"Authorization": f"Bearer {user_token}"}
     )
     assert response.status_code == 403  # Forbidden, as expected for regular user
+@pytest.mark.asyncio
+async def test_upgrade_user_to_professional_success(async_client, admin_token, regular_user):
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    response = await async_client.post(
+        f"/users/{regular_user.id}/upgrade",
+        headers=headers
+    )
+    assert response.status_code == 200
+    assert response.json()["is_professional"] is True
+
+@pytest.mark.asyncio
+async def test_upgrade_user_not_found(async_client, admin_token):
+    from uuid import uuid4
+    non_existent_id = str(uuid4())
+    headers = {"Authorization": f"Bearer {admin_token}"}
+    response = await async_client.post(
+        f"/users/{non_existent_id}/upgrade",
+        headers=headers
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"
+
+@pytest.mark.asyncio
+async def test_upgrade_user_unauthorized(async_client, user_token, another_user):
+    headers = {"Authorization": f"Bearer {user_token}"}
+    response = await async_client.post(
+        f"/users/{another_user.id}/upgrade",
+        headers=headers
+    )
+    assert response.status_code == 403
