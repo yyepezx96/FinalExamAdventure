@@ -194,9 +194,19 @@ async def test_list_users_unauthorized(async_client, user_token):
 import pytest
 
 @pytest.mark.asyncio
-async def test_registration_triggers_email(mocker, async_client):
-    # Mock the email service method to prevent real email sending
+async def test_registration_triggers_email(mocker, async_client, db_session):
+    # ✅ Patch the actual place it's used
     mock_send_email = mocker.patch("app.services.user_service.EmailService.send_verification_email")
+
+    # ✅ Pre-create one user to avoid the new user being the first ADMIN
+    await UserService.create(db_session, {
+        "email": "seeduser@example.com",
+        "nickname": "seeduser",
+        "first_name": "Seed",
+        "last_name": "User",
+        "password": "SeedUserPass123!",
+        "role": "ANONYMOUS"
+    }, EmailService())
 
     user_data = {
         "email": "test_email_trigger@example.com",
