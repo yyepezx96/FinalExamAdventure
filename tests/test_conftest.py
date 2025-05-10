@@ -62,3 +62,35 @@ async def test_update_professional_status(db_session, verified_user):
     updated_user = result.scalars().first()
     assert updated_user.is_professional
     assert updated_user.professional_status_updated_at is not None
+from app.utils.security import hash_password
+from app.models.user_model import User, UserRole
+
+@pytest.fixture
+async def regular_user(db_session):
+    user = User(
+        email="regular@example.com",
+        hashed_password=hash_password("MySuperPassword$1234"),
+        first_name="Regular",
+        last_name="User",
+        email_verified=True,
+        role=UserRole.AUTHENTICATED,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
+
+@pytest.fixture
+async def another_user(db_session):
+    user = User(
+        email="another@example.com",
+        hashed_password=hash_password("MySuperPassword$1234"),
+        first_name="Another",
+        last_name="User",
+        email_verified=True,
+        role=UserRole.AUTHENTICATED,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user

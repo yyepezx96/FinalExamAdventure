@@ -238,3 +238,60 @@ def email_service():
         mock_service.send_verification_email.return_value = None
         mock_service.send_user_email.return_value = None
         return mock_service
+# conftest.py
+
+import pytest
+from app.models.user_model import User, UserRole
+from app.utils.security import hash_password
+from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import uuid4
+from datetime import datetime
+
+@pytest.fixture
+async def regular_user(db_session: AsyncSession) -> User:
+    user = User(
+        id=uuid4(),
+        email="regular@example.com",
+        hashed_password=hash_password("MySuperPassword$1234"),
+        first_name="Regular",
+        last_name="User",
+        role=UserRole.AUTHENTICATED,
+        email_verified=True,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    return user
+    
+@pytest.fixture
+async def regular_user(db_session: AsyncSession) -> User:
+    user = User(
+        id=uuid4(),
+        nickname="regular_user",  # ✅ required field
+        email="regular@example.com",
+        hashed_password=hash_password("MySuperPassword$1234"),
+        first_name="Regular",
+        last_name="User",
+        role=UserRole.AUTHENTICATED,
+        email_verified=True,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    return user
+
+@pytest.fixture
+async def another_user(db_session: AsyncSession) -> User:
+    user = User(
+        id=uuid4(),
+        nickname="another_user",  # ✅ required field
+        email="another@example.com",
+        hashed_password=hash_password("MySuperPassword$1234"),
+        first_name="Another",
+        last_name="User",
+        role=UserRole.AUTHENTICATED,
+        email_verified=True,
+    )
+    db_session.add(user)
+    await db_session.commit()
+    return user
+
+
