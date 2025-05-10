@@ -82,9 +82,11 @@ class UserService:
     @classmethod
     async def update(cls, session: AsyncSession, user_id: UUID, update_data: Dict[str, str]) -> Optional[User]:
         try:
+            # ✅ Catch invalid emails and other bad fields
             validated_data = UserUpdate(**update_data).model_dump(exclude_unset=True)
-            if "password" in validated_data:
-                validated_data["hashed_password"] = hash_password(validated_data.pop("password"))
+
+            if 'password' in validated_data:
+                validated_data['hashed_password'] = hash_password(validated_data.pop('password'))
             query = update(User).where(User.id == user_id).values(**validated_data).execution_options(synchronize_session="fetch")
             await cls._execute_query(session, query)
             return await cls.get_by_id(session, user_id)
