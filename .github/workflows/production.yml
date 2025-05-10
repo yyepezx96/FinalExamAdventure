@@ -42,7 +42,7 @@ jobs:
 
       - name: Run Tests
         env:
-          DATABASE_URL: postgres+asyncpg://user:pass@localhost:5432/test_db
+          DATABASE_URL: postgresql+asyncpg://user:pass@localhost:5432/test_db
         run: |
           source venv/bin/activate
           pytest -v
