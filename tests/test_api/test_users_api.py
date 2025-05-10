@@ -8,6 +8,8 @@ from app.utils.security import hash_password
 from app.services.jwt_service import decode_token  # Import your FastAPI app
 from app.services.user_service import UserService
 from app.services.email_service import EmailService
+from app.dependencies import get_email_service
+
 
 # Example of a test function using the async_client fixture
 @pytest.mark.asyncio
@@ -208,7 +210,7 @@ async def test_registration_triggers_email(mocker, async_client, db_session):
         "last_name": "User",
         "password": "SeedUserPass123!",
         "role": "ANONYMOUS"
-    }, EmailService())
+    }, get_email_service())
 
     user_data = {
         "email": "test_email_trigger@example.com",
