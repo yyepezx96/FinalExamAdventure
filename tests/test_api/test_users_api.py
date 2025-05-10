@@ -196,7 +196,7 @@ import pytest
 @pytest.mark.asyncio
 async def test_registration_triggers_email(mocker, async_client):
     # Mock the email service method to prevent real email sending
-    mock_send_email = mocker.patch("app.services.email_service.EmailService.send_verification_email")
+    mock_send_email = mocker.patch("app.services.user_service.EmailService.send_verification_email")
 
     user_data = {
         "email": "test_email_trigger@example.com",
